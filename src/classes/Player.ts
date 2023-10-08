@@ -1,5 +1,7 @@
-import { Position, Vector2 } from "./GameState/GameState.ts";
+import { Position } from "./GameState/GameState.ts";
 import { v4 as uuid } from "uuid";
+import { Movable, Shootable } from "./types/gameObjectTypes.ts";
+import Vector2 from "./Vector2.ts";
 
 export const DEFAULT_PLAYER_CONSTS = {
   movementSpeed: 500,
@@ -12,7 +14,7 @@ export type PlayerContructorProps = {
   sizeRadius?: number;
   color?: string;
 };
-export default class Player {
+export default class Player implements Movable, Shootable {
   #id: string;
   #name: string;
   #position: Position;
@@ -50,8 +52,8 @@ export default class Player {
     return this.#movementSpeed;
   }
 
-  set movementSpeed(movementSpeed: number) {
-    this.#movementSpeed = movementSpeed;
+  set movementSpeed(value: number) {
+    this.#movementSpeed = value;
   }
 
   get id() {
@@ -66,8 +68,10 @@ export default class Player {
     return this.#color;
   }
 
+  shoot() {}
+
   move(vector: Vector2, deltaTime: number) {
-    this.#position.x += vector[0] * this.#movementSpeed * deltaTime;
-    this.#position.y += vector[1] * this.#movementSpeed * deltaTime;
+    this.#position.x += vector.x * this.#movementSpeed * deltaTime;
+    this.#position.y += vector.y * this.#movementSpeed * deltaTime;
   }
 }

@@ -1,13 +1,15 @@
 import Player from "../Player.ts";
 import { renderFPS, renderPlayers } from "./helpers/render.ts";
 import PlayerInput from "../PlayerInput/PlayerInput.ts";
+import { FPSDebug, updateFpsDebugVariables } from "./helpers/debug.ts";
+import Vector2 from "../Vector2.ts";
 
-export type Vector2 = [number, number];
-
-export type Position = {
+export type XYNumericValues = {
   x: number;
   y: number;
 };
+
+export type Position = XYNumericValues;
 
 export type GameStateConstructorProps = {
   canvasRef: HTMLCanvasElement;
@@ -15,15 +17,22 @@ export type GameStateConstructorProps = {
 };
 
 export default class GameState {
-  #players: Player[] = [new Player({ name: "jureczek", initialPosition: { x: 300, y: 300 } })];
-  #lastFrameTime: number;
-  #deltaTime = 0;
+  // rendering
   #canvas: HTMLCanvasElement;
   #ctx: CanvasRenderingContext2D;
+  // time
+  #lastFrameTime: number;
+  #deltaTime = 0;
+  // entities
+  #players: Player[] = [new Player({ name: "jureczek", initialPosition: { x: 300, y: 300 } })];
+  // input
   #playerInput: PlayerInput;
-  #frameCount = 0;
-  #fps = 0;
-  #lastFrameTimeForFPS = 0;
+  // fps debug
+  fpsDebug: FPSDebug = {
+    frameCount: 0,
+    fps: 0,
+    lastFrameTimeForFPS: 0,
+  };
 
   constructor({ canvasRef, playerInput }: GameStateConstructorProps) {
     this.#lastFrameTime = performance.now();
@@ -35,14 +44,9 @@ export default class GameState {
   }
 
   tick() {
-    this.#frameCount++;
     const currentTime = performance.now();
 
-    if (currentTime - this.#lastFrameTimeForFPS >= 1000) {
-      this.#fps = this.#frameCount;
-      this.#frameCount = 0;
-      this.#lastFrameTimeForFPS = currentTime;
-    }
+    updateFpsDebugVariables(this.fpsDebug, currentTime);
 
     this.#deltaTime = (currentTime - this.#lastFrameTime) / 1000;
     this.#lastFrameTime = currentTime;
@@ -59,12 +63,14 @@ export default class GameState {
     this.#ctx.clearRect(0, 0, this.#canvas.width, this.#canvas.height);
 
     renderPlayers(this.#players, this.#ctx);
-    renderFPS(this.#ctx, this.#fps);
+    renderFPS(this.#ctx, this.fpsDebug.fps);
   }
 
   #checkInput() {
     const direction = this.#playerInput.direction;
-    this.movePlayer(this.#players[0].id, direction);
+    if (!direction.isZero()) {
+      this.movePlayer(this.#players[0].id, direction);
+    }
   }
 
   movePlayer = (id: Player["id"], direction: Vector2): void => {

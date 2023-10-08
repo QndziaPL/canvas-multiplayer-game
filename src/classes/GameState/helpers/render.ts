@@ -11,6 +11,8 @@ export const renderPlayers = (players: Player[], ctx: CanvasRenderingContext2D) 
     ctx.fillStyle = color;
     ctx.fill();
     ctx.closePath();
+    ctx.fillStyle = "black";
+    ctx.fillText(name, x + sizeRadius, y + sizeRadius);
     ctx.restore();
   });
 };
