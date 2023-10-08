@@ -1,8 +1,10 @@
 import Player from "../Player.ts";
-import { renderFPS, renderPlayers } from "./helpers/render.ts";
+import { renderFPS, renderPlayers, renderProjectiles } from "./helpers/render.ts";
 import PlayerInput from "../PlayerInput/PlayerInput.ts";
 import { FPSDebug, updateFpsDebugVariables } from "./helpers/debug.ts";
 import Vector2 from "../Vector2.ts";
+import Projectile from "../Projectile.ts";
+import { updateProjectiles } from "./helpers/updateProjectiles.ts";
 
 export type XYNumericValues = {
   x: number;
@@ -25,6 +27,7 @@ export default class GameState {
   #deltaTime = 0;
   // entities
   #players: Player[] = [new Player({ name: "jureczek", initialPosition: { x: 300, y: 300 } })];
+  #projectiles: Projectile[] = [];
   // input
   #playerInput: PlayerInput;
   // fps debug
@@ -57,12 +60,14 @@ export default class GameState {
   update() {
     this.#checkInput();
     this.#render();
+    updateProjectiles(this.#projectiles, this.#deltaTime);
   }
 
   #render() {
     this.#ctx.clearRect(0, 0, this.#canvas.width, this.#canvas.height);
 
-    renderPlayers(this.#players, this.#ctx);
+    renderPlayers(this.#ctx, this.#players);
+    renderProjectiles(this.#ctx, this.#projectiles);
     renderFPS(this.#ctx, this.fpsDebug.fps);
   }
 
@@ -70,6 +75,14 @@ export default class GameState {
     const direction = this.#playerInput.direction;
     if (!direction.isZero()) {
       this.movePlayer(this.#players[0].id, direction);
+    }
+    if (this.#playerInput.mouse.pressed) {
+      const playerPosition = { ...this.#players[0].position };
+      const vector = new Vector2(this.#playerInput.mouse.position.x, this.#playerInput.mouse.position.y).subtract(
+        new Vector2(playerPosition.x, playerPosition.y),
+      );
+      const normalized = vector.normalize();
+      this.#projectiles.push(new Projectile({ position: playerPosition, velocity: normalized }));
     }
   }
 

@@ -1,7 +1,8 @@
 import Player from "../../Player.ts";
 import { Position } from "../GameState.ts";
+import Projectile from "../../Projectile.ts";
 
-export const renderPlayers = (players: Player[], ctx: CanvasRenderingContext2D) => {
+export const renderPlayers = (ctx: CanvasRenderingContext2D, players: Player[]) => {
   players.forEach(({ position, sizeRadius, name, color }) => {
     const { x, y } = centerPositionBasedOnSize(position, sizeRadius);
 
@@ -29,4 +30,19 @@ export const renderFPS = (ctx: CanvasRenderingContext2D, fps: number) => {
   ctx.fillStyle = "red";
   ctx.fillText(`FPS: ${fpsToFixed}`, 40, 40);
   ctx.restore();
+};
+
+export const renderProjectiles = (ctx: CanvasRenderingContext2D, projectiles: Projectile[]) => {
+  projectiles.forEach(({ position }) => {
+    const sizeRadius = 5;
+    const { x, y } = centerPositionBasedOnSize(position, sizeRadius);
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(x, y, sizeRadius, 0, 2 * Math.PI);
+    ctx.fillStyle = "red";
+    ctx.fill();
+    ctx.closePath();
+    ctx.restore();
+  });
 };

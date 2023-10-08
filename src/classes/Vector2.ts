@@ -37,6 +37,11 @@ export default class Vector2 {
     return new Vector2(0, 0);
   }
 
+  distanceFromPoint(point: Vector2): number {
+    const distance = this.subtract(point);
+    return distance.length;
+  }
+
   isZero() {
     return this.x === 0 && this.y === 0;
   }
