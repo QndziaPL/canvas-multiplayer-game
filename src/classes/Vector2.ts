@@ -56,6 +56,10 @@ export default class Vector2 {
   isZero() {
     return this.x === 0 && this.y === 0;
   }
+
+  static CreateMany(...props: XYNumericValues[]): Vector2[] {
+    return props.map((p) => new Vector2(p.x, p.y));
+  }
   /**
    * Check if two line segments defined by points (p1, p2) and (q1, q2) intersect.
    * @param p1 - Start point of the first line segment.

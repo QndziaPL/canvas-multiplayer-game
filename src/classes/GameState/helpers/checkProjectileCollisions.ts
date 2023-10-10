@@ -3,7 +3,7 @@ import Environment from "../../Environment/Environment.ts";
 import { Collider } from "../../types/gameObjectTypes.ts";
 import Vector2 from "../../Vector2.ts";
 
-const COLLISION_MARGIN = 1;
+const COLLISION_MARGIN = 0.3;
 export const checkProjectileCollisions = (projectiles: Projectile[], environment: Environment) => {
   projectiles.forEach((projectile) => {
     const colliders = environment.drawables.filter((drawable) => Collider.isCollider(drawable));
@@ -25,11 +25,6 @@ export const checkProjectileCollisions = (projectiles: Projectile[], environment
 
         // Check if the distance is less than or equal to the projectile's radius
         if (distance <= projectile.radius + COLLISION_MARGIN) {
-          console.log(
-            `Collision detected at distance: ${distance}, radius: ${projectile.radius}, margin: ${COLLISION_MARGIN}`,
-          );
-          console.log(`Projectile velocity before collision: x=${projectile.velocity.x}, y=${projectile.velocity.y}`);
-
           // Calculate the angle of the wall segment at the point of collision
           const wallAngle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
 
@@ -39,13 +34,21 @@ export const checkProjectileCollisions = (projectiles: Projectile[], environment
           // Use the normal vector for reflection calculations
           const velocity = projectile.velocity;
           const newVelocity = velocity.subtract(normal.multiply(2 * velocity.dot(normal)));
-          console.log(`New velocity after reflection: x=${newVelocity.x}, y=${newVelocity.y}`);
 
           const newPosition = closestPoint.add(normal.multiply(projectile.radius + COLLISION_MARGIN));
           projectile.position = newPosition;
 
+          const debug = false;
+          if (debug) {
+            console.log(
+              `Collision detected at distance: ${distance}, radius: ${projectile.radius}, margin: ${COLLISION_MARGIN}`,
+            );
+            console.log(`Projectile velocity before collision: x=${projectile.velocity.x}, y=${projectile.velocity.y}`);
+            console.log(`New velocity after reflection: x=${newVelocity.x}, y=${newVelocity.y}`);
+            console.log(`Normal vector: x=${normal.x}, y=${normal.y}`);
+          }
+
           projectile.velocity = newVelocity;
-          console.log(`Normal vector: x=${normal.x}, y=${normal.y}`);
         }
       }
     });

@@ -1,18 +1,17 @@
-import { Position } from "../GameState/GameState.ts";
 import Vector2 from "../Vector2.ts";
 
 export type MouseInput = {
   pressed: boolean;
-  position: Position;
+  position: Vector2;
 };
 export default class PlayerInput {
   #keysPressed: Set<string> = new Set();
   #mouse: MouseInput = {
     pressed: false,
-    position: {
+    position: new Vector2({
       x: 0,
       y: 0,
-    },
+    }),
   };
   constructor() {
     addEventListener("keydown", this.#handleOnKey("keydown"));
@@ -42,7 +41,7 @@ export default class PlayerInput {
         this.#mouse.pressed = false;
         break;
       case "mousemove":
-        this.#mouse.position = { x: event.clientX, y: event.clientY };
+        this.#mouse.position = new Vector2({ x: event.clientX, y: event.clientY });
         break;
     }
   };

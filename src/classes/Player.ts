@@ -1,4 +1,3 @@
-import { Position } from "./GameState/GameState.ts";
 import { v4 as uuid } from "uuid";
 import { Movable, Shootable } from "./types/gameObjectTypes.ts";
 import Vector2 from "./Vector2.ts";
@@ -9,7 +8,7 @@ export const DEFAULT_PLAYER_CONSTS = {
 };
 export type PlayerContructorProps = {
   name: string;
-  initialPosition: Position;
+  initialPosition: Vector2;
   movementSpeed?: number;
   sizeRadius?: number;
   color?: string;
@@ -17,7 +16,7 @@ export type PlayerContructorProps = {
 export default class Player implements Movable, Shootable {
   #id: string;
   #name: string;
-  #position: Position;
+  #position: Vector2;
   #movementSpeed: number;
   #sizeRadius: number;
   #color: string;
@@ -44,7 +43,7 @@ export default class Player implements Movable, Shootable {
     return this.#position;
   }
 
-  set position(position: Position) {
+  set position(position: Vector2) {
     this.#position = position;
   }
 

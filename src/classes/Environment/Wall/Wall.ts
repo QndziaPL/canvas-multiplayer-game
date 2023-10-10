@@ -1,8 +1,8 @@
 import { Collider, Drawable } from "../../types/gameObjectTypes.ts";
-import { Position } from "../../GameState/GameState.ts";
+import Vector2 from "../../Vector2.ts";
 
 export type WallConstructorProps = {
-  points: Position[];
+  points: Vector2[];
 };
 export default class Wall implements Drawable, Collider {
   #points: WallConstructorProps["points"];

@@ -1,6 +1,6 @@
 import Player from "../../Player.ts";
-import { Position } from "../GameState.ts";
 import Projectile from "../../Projectile.ts";
+import Vector2 from "../../Vector2.ts";
 
 export const renderPlayers = (ctx: CanvasRenderingContext2D, players: Player[]) => {
   players.forEach(({ position, sizeRadius, name, color }) => {
@@ -17,10 +17,11 @@ export const renderPlayers = (ctx: CanvasRenderingContext2D, players: Player[]) 
   });
 };
 
-export const centerPositionBasedOnSize = (position: Position, sizeRadius: number): Position => ({
-  x: position.x - sizeRadius / 2,
-  y: position.y - sizeRadius / 2,
-});
+export const centerPositionBasedOnSize = (position: Vector2, sizeRadius: number): Vector2 =>
+  new Vector2({
+    x: position.x - sizeRadius / 2,
+    y: position.y - sizeRadius / 2,
+  });
 
 export const renderFPS = (ctx: CanvasRenderingContext2D, fps: number) => {
   const fpsToFixed = Number(fps.toFixed());

@@ -7,13 +7,9 @@ import Projectile from "../Projectile.ts";
 import { updateProjectiles } from "./helpers/updateProjectiles.ts";
 import Environment from "../Environment/Environment.ts";
 import { checkProjectileCollisions } from "./helpers/checkProjectileCollisions.ts";
+import { shoot } from "./helpers/shoot.ts";
 
-export type XYNumericValues = {
-  x: number;
-  y: number;
-};
-
-export type Position = XYNumericValues;
+export type XYNumericValues = { x: number; y: number };
 
 export type GameStateConstructorProps = {
   canvasRef: HTMLCanvasElement;
@@ -28,7 +24,7 @@ export default class GameState {
   #lastFrameTime: number;
   #deltaTime = 0;
   // entities
-  #players: Player[] = [new Player({ name: "jureczek", initialPosition: { x: 300, y: 300 } })];
+  #players: Player[] = [new Player({ name: "jureczek", initialPosition: new Vector2({ x: 300, y: 300 }) })];
   #projectiles: Projectile[] = [];
   #environment: Environment;
   // input
@@ -81,17 +77,26 @@ export default class GameState {
 
   #checkInput() {
     const direction = this.#playerInput.direction;
+
     if (!direction.isZero()) {
       this.movePlayer(this.#players[0].id, direction);
     }
+
     if (this.#playerInput.mouse.pressed) {
-      const playerPosition = { ...this.#players[0].position };
-      const vector = new Vector2(this.#playerInput.mouse.position.x, this.#playerInput.mouse.position.y).subtract(
-        new Vector2(playerPosition.x, playerPosition.y),
-      );
-      const normalized = vector.normalize();
-      this.#projectiles.push(new Projectile({ position: playerPosition, velocity: normalized }));
+      shoot(this);
     }
+  }
+
+  get playerInput() {
+    return this.#playerInput;
+  }
+
+  get players() {
+    return this.#players;
+  }
+
+  addProjectile(projectile: Projectile) {
+    this.#projectiles.push(projectile);
   }
 
   movePlayer = (id: Player["id"], direction: Vector2): void => {
