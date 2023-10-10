@@ -5,6 +5,8 @@ import { FPSDebug, updateFpsDebugVariables } from "./helpers/debug.ts";
 import Vector2 from "../Vector2.ts";
 import Projectile from "../Projectile.ts";
 import { updateProjectiles } from "./helpers/updateProjectiles.ts";
+import Environment from "../Environment/Environment.ts";
+import { checkProjectileCollisions } from "./helpers/checkProjectileCollisions.ts";
 
 export type XYNumericValues = {
   x: number;
@@ -28,6 +30,7 @@ export default class GameState {
   // entities
   #players: Player[] = [new Player({ name: "jureczek", initialPosition: { x: 300, y: 300 } })];
   #projectiles: Projectile[] = [];
+  #environment: Environment;
   // input
   #playerInput: PlayerInput;
   // fps debug
@@ -38,12 +41,15 @@ export default class GameState {
   };
 
   constructor({ canvasRef, playerInput }: GameStateConstructorProps) {
-    this.#lastFrameTime = performance.now();
     this.#canvas = canvasRef;
     const ctx = canvasRef.getContext("2d");
     if (!ctx) throw new Error("Couldn't get context2d from canvasRef");
     this.#ctx = ctx;
+
+    this.#lastFrameTime = performance.now();
     this.#playerInput = playerInput;
+
+    this.#environment = new Environment();
   }
 
   tick() {
@@ -58,6 +64,7 @@ export default class GameState {
   }
 
   update() {
+    checkProjectileCollisions(this.#projectiles, this.#environment);
     this.#checkInput();
     this.#render();
     updateProjectiles(this.#projectiles, this.#deltaTime);
@@ -68,6 +75,7 @@ export default class GameState {
 
     renderPlayers(this.#ctx, this.#players);
     renderProjectiles(this.#ctx, this.#projectiles);
+    this.#environment.drawEnvironment(this.#ctx);
     renderFPS(this.#ctx, this.fpsDebug.fps);
   }
 

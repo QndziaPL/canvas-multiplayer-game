@@ -5,7 +5,6 @@ import Projectile from "../../Projectile.ts";
 export const renderPlayers = (ctx: CanvasRenderingContext2D, players: Player[]) => {
   players.forEach(({ position, sizeRadius, name, color }) => {
     const { x, y } = centerPositionBasedOnSize(position, sizeRadius);
-
     ctx.save();
     ctx.beginPath();
     ctx.arc(x, y, sizeRadius, 0, 2 * Math.PI);

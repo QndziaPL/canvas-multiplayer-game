@@ -1,8 +1,19 @@
+import { XYNumericValues } from "./GameState/GameState.ts";
+
 export default class Vector2 {
-  constructor(
-    public x: number,
-    public y: number,
-  ) {}
+  x: number;
+  y: number;
+  constructor({ x, y }: XYNumericValues);
+  constructor(x: number, y: number);
+  constructor(param1: any, param2?: any) {
+    if (typeof param1 === "object") {
+      this.x = param1.x;
+      this.y = param1.y;
+    } else {
+      this.x = param1;
+      this.y = param2;
+    }
+  }
 
   add(vector: Vector2): Vector2 {
     return new Vector2(this.x + vector.x, this.y + vector.y);
@@ -44,5 +55,48 @@ export default class Vector2 {
 
   isZero() {
     return this.x === 0 && this.y === 0;
+  }
+  /**
+   * Check if two line segments defined by points (p1, p2) and (q1, q2) intersect.
+   * @param p1 - Start point of the first line segment.
+   * @param p2 - End point of the first line segment.
+   * @param q1 - Start point of the second line segment.
+   * @param q2 - End point of the second line segment.
+   * @returns True if the line segments intersect, false otherwise.
+   */
+  static doLineSegmentsIntersect(p1: Vector2, p2: Vector2, q1: Vector2, q2: Vector2): boolean {
+    const dx1 = p2.x - p1.x;
+    const dy1 = p2.y - p1.y;
+    const dx2 = q2.x - q1.x;
+    const dy2 = q2.y - q1.y;
+
+    const crossProduct = dx1 * dy2 - dx2 * dy1;
+
+    if (crossProduct === 0) {
+      return false; // The line segments are parallel
+    }
+
+    const t1 = ((q1.x - p1.x) * dy2 - (q1.y - p1.y) * dx2) / crossProduct;
+    const t2 = ((q1.x - p1.x) * dy1 - (q1.y - p1.y) * dx1) / crossProduct;
+
+    return t1 >= 0 && t1 <= 1 && t2 >= 0 && t2 <= 1;
+  }
+
+  static closestPointOnLineSegment(point: Vector2, lineStart: Vector2, lineEnd: Vector2): Vector2 {
+    const line = lineEnd.subtract(lineStart);
+    const lenSquared = line.x * line.x + line.y * line.y;
+
+    if (lenSquared === 0) {
+      // Line segment is just a point, so return the start point
+      return lineStart.clone();
+    }
+
+    // Calculate the projection of "point" onto the line
+    const t = Math.max(0, Math.min(1, point.subtract(lineStart).dot(line) / lenSquared));
+
+    // Calculate the closest point on the line segment
+    const closestPoint = lineStart.add(line.multiply(t));
+
+    return closestPoint;
   }
 }

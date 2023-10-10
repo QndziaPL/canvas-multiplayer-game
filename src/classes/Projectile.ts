@@ -1,4 +1,4 @@
-import { Position } from "./GameState/GameState.ts";
+import { Position, XYNumericValues } from "./GameState/GameState.ts";
 import { Movable } from "./types/gameObjectTypes.ts";
 import Vector2 from "./Vector2.ts";
 
@@ -7,6 +7,7 @@ export type ProjectileConstructorProps = {
   velocity: Vector2;
   movementSpeed?: number;
   range?: number;
+  radius?: number;
 };
 export default class Projectile implements Movable {
   #position: Position;
@@ -14,12 +15,26 @@ export default class Projectile implements Movable {
   #movementSpeed: number;
   #range: number;
   #rangeTravelled: number = 0;
+  #radius: number;
 
-  constructor({ position, velocity, movementSpeed = 5000, range = 1500 }: ProjectileConstructorProps) {
+  constructor({ position, velocity, movementSpeed = 100, range = 5000, radius = 5 }: ProjectileConstructorProps) {
     this.#position = position;
     this.#velocity = velocity;
     this.#movementSpeed = movementSpeed;
     this.#range = range;
+    this.#radius = radius;
+  }
+
+  get velocity() {
+    return this.#velocity;
+  }
+
+  set velocity(velocity: Vector2) {
+    this.#velocity = velocity;
+  }
+
+  get radius() {
+    return this.#radius;
   }
 
   get movementSpeed() {
@@ -36,6 +51,10 @@ export default class Projectile implements Movable {
 
   get position() {
     return this.#position;
+  }
+
+  set position(value: XYNumericValues) {
+    this.#position = value;
   }
 
   move(deltaTime: number) {
