@@ -15,6 +15,7 @@ export interface Shootable {
 export interface Drawable {
   draw(ctx: CanvasRenderingContext2D): void;
   points: Vector2[];
+  closestCollisionPoint(startPoint: Vector2, endPoint: Vector2): Vector2 | undefined;
 }
 
 export class Collider {

@@ -32,4 +32,30 @@ export default class Wall implements Drawable, Collider {
     ctx.fill();
     ctx.restore();
   }
+
+  closestCollisionPoint(startPoint: Vector2, endPoint: Vector2): Vector2 | undefined {
+    let closestIntersection: Vector2 | undefined;
+    let closestDistance = Infinity;
+
+    // Iterate through the wall's points to check for intersections with the ray
+    for (let i = 0; i < this.#points.length; i++) {
+      const p1 = this.#points[i];
+      const p2 = this.#points[(i + 1) % this.#points.length]; // Wrap around to the first point
+
+      const intersection = Vector2.IntersectionPoint(startPoint, endPoint, p1, p2);
+
+      if (intersection) {
+        // Calculate the distance from the ray's start point to the intersection
+        const distance = intersection.distanceFromPoint(startPoint);
+
+        // Update the closest intersection if this one is closer
+        if (distance < closestDistance) {
+          closestIntersection = intersection;
+          closestDistance = distance;
+        }
+      }
+    }
+
+    return closestIntersection;
+  }
 }

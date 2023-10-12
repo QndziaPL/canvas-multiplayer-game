@@ -53,6 +53,24 @@ export default class Vector2 {
     return distance.length;
   }
 
+  static ClosestPoint(relativeTo: Vector2, points: Vector2[]): Vector2 | undefined {
+    if (!points.length) return undefined;
+
+    let closestPoint = points[0];
+    let closestDistance = relativeTo.distanceFromPoint(points[0]);
+
+    for (let i = 1; i < points.length; i++) {
+      const distance = relativeTo.distanceFromPoint(points[i]);
+
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestPoint = points[i];
+      }
+    }
+
+    return closestPoint;
+  }
+
   isZero() {
     return this.x === 0 && this.y === 0;
   }
@@ -66,9 +84,9 @@ export default class Vector2 {
    * @param p2 - End point of the first line segment.
    * @param q1 - Start point of the second line segment.
    * @param q2 - End point of the second line segment.
-   * @returns True if the line segments intersect, false otherwise.
+   * @returns Vector2 if the line segments intersect, undefined otherwise.
    */
-  static doLineSegmentsIntersect(p1: Vector2, p2: Vector2, q1: Vector2, q2: Vector2): boolean {
+  static IntersectionPoint(p1: Vector2, p2: Vector2, q1: Vector2, q2: Vector2): Vector2 | undefined {
     const dx1 = p2.x - p1.x;
     const dy1 = p2.y - p1.y;
     const dx2 = q2.x - q1.x;
@@ -76,14 +94,21 @@ export default class Vector2 {
 
     const crossProduct = dx1 * dy2 - dx2 * dy1;
 
-    if (crossProduct === 0) {
-      return false; // The line segments are parallel
+    if (Math.abs(crossProduct) < 1e-6) {
+      return undefined; // The line segments are parallel
     }
 
     const t1 = ((q1.x - p1.x) * dy2 - (q1.y - p1.y) * dx2) / crossProduct;
     const t2 = ((q1.x - p1.x) * dy1 - (q1.y - p1.y) * dx1) / crossProduct;
 
-    return t1 >= 0 && t1 <= 1 && t2 >= 0 && t2 <= 1;
+    if (t1 >= 0 && t1 <= 1 && t2 >= 0 && t2 <= 1) {
+      const intersectionX = p1.x + t1 * dx1;
+      const intersectionY = p1.y + t1 * dy1;
+
+      return new Vector2(intersectionX, intersectionY);
+    }
+
+    return undefined;
   }
 
   static closestPointOnLineSegment(point: Vector2, lineStart: Vector2, lineEnd: Vector2): Vector2 {

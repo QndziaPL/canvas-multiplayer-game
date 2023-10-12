@@ -1,5 +1,5 @@
 import Player from "../Player.ts";
-import { renderFPS, renderPlayers, renderProjectiles } from "./helpers/render.ts";
+import { renderFlashlight, renderFPS, renderPlayers, renderProjectiles } from "./helpers/render.ts";
 import PlayerInput from "../PlayerInput/PlayerInput.ts";
 import { FPSDebug, updateFpsDebugVariables } from "./helpers/debug.ts";
 import Vector2 from "../Vector2.ts";
@@ -48,6 +48,10 @@ export default class GameState {
     this.#environment = new Environment();
   }
 
+  get environment() {
+    return this.#environment;
+  }
+
   tick() {
     const currentTime = performance.now();
 
@@ -68,10 +72,11 @@ export default class GameState {
 
   #render() {
     this.#ctx.clearRect(0, 0, this.#canvas.width, this.#canvas.height);
-
     renderPlayers(this.#ctx, this.#players);
     renderProjectiles(this.#ctx, this.#projectiles);
     this.#environment.drawEnvironment(this.#ctx);
+    renderFlashlight(this);
+
     renderFPS(this.#ctx, this.fpsDebug.fps);
   }
 
@@ -85,6 +90,10 @@ export default class GameState {
     if (this.#playerInput.mouse.pressed) {
       shoot(this);
     }
+  }
+
+  get ctx() {
+    return this.#ctx;
   }
 
   get playerInput() {
