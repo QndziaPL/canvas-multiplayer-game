@@ -1,6 +1,6 @@
 import Player from "../Player.ts";
-import { renderFlashlight, renderFPS, renderPlayers, renderProjectiles } from "./helpers/render.ts";
-import PlayerInput from "../PlayerInput/PlayerInput.ts";
+import { renderFlashlight, renderFPS, renderGround, renderPlayers, renderProjectiles } from "./helpers/render.ts";
+import PlayerInput, { KeyBindings } from "../PlayerInput/PlayerInput.ts";
 import { FPSDebug, updateFpsDebugVariables } from "./helpers/debug.ts";
 import Vector2 from "../Vector2.ts";
 import Projectile from "../Projectile.ts";
@@ -24,7 +24,7 @@ export default class GameState {
   #lastFrameTime: number;
   #deltaTime = 0;
   // entities
-  #players: Player[] = [new Player({ name: "jureczek", initialPosition: new Vector2({ x: 300, y: 300 }) })];
+  #players: Player[] = [new Player({ name: "jureczek", initialPosition: new Vector2({ x: 500, y: 500 }) })];
   #projectiles: Projectile[] = [];
   #environment: Environment;
   // input
@@ -35,6 +35,15 @@ export default class GameState {
     fps: 0,
     lastFrameTimeForFPS: 0,
   };
+  darkness = false;
+
+  keyBindings: KeyBindings = {
+    x: () => (this.darkness = !this.darkness),
+    ".": () => this.#players[0].addFlashlightRadius(5),
+    ",": () => this.#players[0].addFlashlightRadius(-5),
+    m: () => this.#players[0].addFlashlightAngle(5),
+    n: () => this.#players[0].addFlashlightAngle(-5),
+  };
 
   constructor({ canvasRef, playerInput }: GameStateConstructorProps) {
     this.#canvas = canvasRef;
@@ -43,6 +52,7 @@ export default class GameState {
     this.#ctx = ctx;
 
     this.#lastFrameTime = performance.now();
+    playerInput.setKeyBindings(this.keyBindings);
     this.#playerInput = playerInput;
 
     this.#environment = new Environment();
@@ -63,6 +73,10 @@ export default class GameState {
     this.update();
   }
 
+  get canvas() {
+    return this.#canvas;
+  }
+
   update() {
     checkProjectileCollisions(this.#projectiles, this.#environment);
     this.#checkInput();
@@ -71,13 +85,16 @@ export default class GameState {
   }
 
   #render() {
-    this.#ctx.clearRect(0, 0, this.#canvas.width, this.#canvas.height);
-    renderPlayers(this.#ctx, this.#players);
-    renderProjectiles(this.#ctx, this.#projectiles);
-    this.#environment.drawEnvironment(this.#ctx);
     renderFlashlight(this);
 
     renderFPS(this.#ctx, this.fpsDebug.fps);
+  }
+
+  renderBelowShadow() {
+    renderGround(this.#ctx);
+    renderPlayers(this.#ctx, this.#players);
+    renderProjectiles(this.#ctx, this.#projectiles);
+    this.#environment.drawEnvironment(this.#ctx);
   }
 
   #checkInput() {

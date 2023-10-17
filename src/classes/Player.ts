@@ -6,6 +6,11 @@ export const DEFAULT_PLAYER_CONSTS = {
   movementSpeed: 500,
   sizeRadius: 10,
 };
+
+export type Flashlight = {
+  radius: number;
+  angle: number;
+};
 export type PlayerContructorProps = {
   name: string;
   initialPosition: Vector2;
@@ -20,6 +25,10 @@ export default class Player implements Movable, Shootable {
   #movementSpeed: number;
   #sizeRadius: number;
   #color: string;
+  #flashlight: Flashlight = {
+    radius: 100,
+    angle: 20,
+  };
   constructor({
     name,
     initialPosition,
@@ -33,6 +42,18 @@ export default class Player implements Movable, Shootable {
     this.#movementSpeed = movementSpeed;
     this.#sizeRadius = sizeRadius;
     this.#color = color;
+  }
+
+  addFlashlightRadius(value: number) {
+    this.#flashlight.radius += value;
+  }
+
+  addFlashlightAngle(value: number) {
+    this.flashlight.angle += value;
+  }
+
+  get flashlight() {
+    return this.#flashlight;
   }
 
   get name() {

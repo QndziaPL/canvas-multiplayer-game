@@ -4,8 +4,10 @@ export type MouseInput = {
   pressed: boolean;
   position: Vector2;
 };
+
+export type KeyBindings = Record<string, () => void>;
 export default class PlayerInput {
-  #keysPressed: Set<string> = new Set();
+  #keysDown: Set<string> = new Set();
   #mouse: MouseInput = {
     pressed: false,
     position: new Vector2({
@@ -13,22 +15,37 @@ export default class PlayerInput {
       y: 0,
     }),
   };
+  #keyBindings: KeyBindings = {};
   constructor() {
     addEventListener("keydown", this.#handleOnKey("keydown"));
     addEventListener("keyup", this.#handleOnKey("keyup"));
+    addEventListener("keypress", this.#handleOnKey("keypress"));
     addEventListener("mousedown", this.#handleOnMouse("mousedown"));
     addEventListener("mouseup", this.#handleOnMouse("mouseup"));
     addEventListener("mousemove", this.#handleOnMouse("mousemove"));
   }
 
-  #handleOnKey = (state: "keydown" | "keyup") => (event: KeyboardEvent) => {
+  setKeyBindings(keyBindings: KeyBindings) {
+    this.#keyBindings = keyBindings;
+  }
+
+  #handleOnKey = (state: "keydown" | "keyup" | "keypress") => (event: KeyboardEvent) => {
     switch (state) {
       case "keydown":
-        this.#keysPressed.add(event.key);
+        this.#keysDown.add(event.key);
         break;
       case "keyup":
-        this.#keysPressed.delete(event.key);
+        this.#keysDown.delete(event.key);
         break;
+      case "keypress":
+        this.#handleKeyPress(event.key);
+        break;
+    }
+  };
+
+  #handleKeyPress = (key: string) => {
+    if (key in this.#keyBindings) {
+      this.#keyBindings[key]();
     }
   };
 
@@ -50,24 +67,24 @@ export default class PlayerInput {
     return this.#mouse;
   }
 
-  get keysPressed() {
-    return this.#keysPressed;
+  get keysDown() {
+    return this.#keysDown;
   }
 
   #upPressed(): 0 | -1 {
-    return this.#keysPressed.has("w") ? -1 : 0;
+    return this.#keysDown.has("w") ? -1 : 0;
   }
 
   #downPressed(): 0 | 1 {
-    return this.#keysPressed.has("s") ? 1 : 0;
+    return this.#keysDown.has("s") ? 1 : 0;
   }
 
   #leftPressed(): 0 | -1 {
-    return this.#keysPressed.has("a") ? -1 : 0;
+    return this.#keysDown.has("a") ? -1 : 0;
   }
 
   #rightPressed(): 0 | 1 {
-    return this.#keysPressed.has("d") ? 1 : 0;
+    return this.#keysDown.has("d") ? 1 : 0;
   }
 
   get direction(): Vector2 {

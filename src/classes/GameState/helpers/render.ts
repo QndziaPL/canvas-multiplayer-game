@@ -5,8 +5,7 @@ import GameState from "../GameState.ts";
 import { Drawable } from "../../types/gameObjectTypes.ts";
 
 export const renderPlayers = (ctx: CanvasRenderingContext2D, players: Player[]) => {
-  players.forEach(({ position, sizeRadius, name, color }) => {
-    const { x, y } = centerPositionBasedOnSize(position, sizeRadius);
+  players.forEach(({ position: { x, y }, sizeRadius, name, color }) => {
     ctx.save();
     ctx.beginPath();
     ctx.arc(x, y, sizeRadius, 0, 2 * Math.PI);
@@ -16,14 +15,15 @@ export const renderPlayers = (ctx: CanvasRenderingContext2D, players: Player[]) 
     ctx.fillStyle = "black";
     ctx.fillText(name, x + sizeRadius, y + sizeRadius);
     ctx.beginPath();
-    ctx.arc(position.x, position.y, 2, 0, 2 * Math.PI);
+    ctx.arc(x, y, 2, 0, 2 * Math.PI);
     ctx.fill();
     ctx.closePath();
     ctx.restore();
   });
 };
 
-export const centerPositionBasedOnSize = (position: Vector2, sizeRadius: number): Vector2 =>
+//todo: refactor, not needed in this form
+export const centerRectanglePositionBasedOnSize = (position: Vector2, sizeRadius: number): Vector2 =>
   new Vector2({
     x: position.x - sizeRadius / 2,
     y: position.y - sizeRadius / 2,
@@ -41,11 +41,9 @@ export const renderFPS = (ctx: CanvasRenderingContext2D, fps: number) => {
 export const renderProjectiles = (ctx: CanvasRenderingContext2D, projectiles: Projectile[]) => {
   projectiles.forEach(({ position }) => {
     const sizeRadius = 5;
-    const { x, y } = centerPositionBasedOnSize(position, sizeRadius);
-
     ctx.save();
     ctx.beginPath();
-    ctx.arc(x, y, sizeRadius, 0, 2 * Math.PI);
+    ctx.arc(position.x, position.y, sizeRadius, 0, 2 * Math.PI);
     ctx.fillStyle = "red";
     ctx.fill();
     ctx.closePath();
@@ -65,7 +63,6 @@ export const calculateFlashlightPoints = (
   const angleIncrement = flashlightAngle / NUMBER_OF_RAYS;
   const flashlightPoints: Vector2[] = [];
 
-  // for (let i = 0; i <= 1; i++) {
   for (let i = -NUMBER_OF_RAYS; i <= NUMBER_OF_RAYS; i++) {
     const currentAngle =
       Math.atan2(mousePosition.y - playerPosition.y, mousePosition.x - playerPosition.x) + i * angleIncrement;
@@ -76,18 +73,13 @@ export const calculateFlashlightPoints = (
     const endX = playerPosition.x + rayDirectionX * flashlightRadius;
     const endY = playerPosition.y + rayDirectionY * flashlightRadius;
 
-    // let collided = false;
-
     const intersectionPointsOfAllObjects: Vector2[] = [];
     for (let drawableIndex = 0; drawableIndex < drawables.length; drawableIndex++) {
       const obstacle = drawables[drawableIndex];
       const intersectionPoint = obstacle.closestCollisionPoint(playerPosition.clone(), new Vector2(endX, endY));
 
       if (intersectionPoint) {
-        // collided = true;
-        // flashlightPoints.push(intersectionPoint);
         intersectionPointsOfAllObjects.push(intersectionPoint);
-        // break;
       }
     }
     if (!intersectionPointsOfAllObjects.length) {
@@ -104,20 +96,20 @@ export const calculateFlashlightPoints = (
 };
 
 export const renderFlashlight = (gameState: GameState) => {
-  const playerPosition = gameState.players[0].position.clone();
+  const player = gameState.players[0];
+  const playerPosition = player.position.clone();
+  const flashlight = player.flashlight;
   const flashlightPoints = calculateFlashlightPoints(
     playerPosition,
     gameState.playerInput.mouse.position,
-    700,
-    Math.PI / 6,
+    flashlight.radius,
+    (flashlight.angle * Math.PI) / 180, // make sure that we cannot exceed for 359 deg
     gameState.environment.drawables,
   );
 
   gameState.ctx.save();
-
-  // gameState.ctx.globalCompositeOperation = "destination-out";
-
-  gameState.ctx.fillStyle = "rgba(255,251,174,0.9)";
+  gameState.ctx.fillStyle = "rgba(37,37,37,1)";
+  gameState.ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
   gameState.ctx.beginPath();
   gameState.ctx.moveTo(playerPosition.x, playerPosition.y);
 
@@ -127,55 +119,18 @@ export const renderFlashlight = (gameState: GameState) => {
   }
 
   gameState.ctx.closePath();
-  gameState.ctx.fill();
-  // gameState.ctx.globalCompositeOperation = "source-over";
+  if (gameState.darkness) {
+    gameState.ctx.clip();
+  }
+
+  gameState.renderBelowShadow();
+
   gameState.ctx.restore();
-
-  // drawClip(gameState.ctx);
 };
 
-export const drawClip = (ctx: CanvasRenderingContext2D) => {
-  const dim = 800;
-  const half = dim / 2;
-  ctx.fillRect(0, 0, dim, dim);
-  ctx.translate(half, half);
-
-  // Create a circular clipping path
-  ctx.beginPath();
-  ctx.arc(0, 0, half, 0, Math.PI * 2, true);
-  ctx.clip();
-
-  // draw background
-  const lingrad = ctx.createLinearGradient(0, -half, 0, half);
-  lingrad.addColorStop(0, "#232256");
-  lingrad.addColorStop(1, "#143778");
-
-  ctx.fillStyle = "green";
-  ctx.fillRect(-half, -half, dim, dim);
-
-  // draw stars
-  for (let j = 1; j < 50; j++) {
-    ctx.save();
-    ctx.fillStyle = "#fff";
-    ctx.translate(half - Math.floor(Math.random() * dim), half - Math.floor(Math.random() * dim));
-    drawStar(ctx, Math.floor(Math.random() * 4) + 2);
-    ctx.restore();
-  }
-};
-
-function drawStar(ctx: CanvasRenderingContext2D, r: number) {
+export const renderGround = (ctx: CanvasRenderingContext2D) => {
   ctx.save();
-  ctx.beginPath();
-  ctx.moveTo(r, 0);
-  for (let i = 0; i < 9; i++) {
-    ctx.rotate(Math.PI / 5);
-    if (i % 2 === 0) {
-      ctx.lineTo((r / 0.525731) * 0.200811, 0);
-    } else {
-      ctx.lineTo(r, 0);
-    }
-  }
-  ctx.closePath();
-  ctx.fill();
+  ctx.fillStyle = "green";
+  ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
   ctx.restore();
-}
+};
